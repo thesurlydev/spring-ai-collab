@@ -35,4 +35,3 @@ To build and run tests:
 
 - [Microsoft's Autogen](https://www.microsoft.com/en-us/research/project/autogen/)
 - [Crew AI](https://www.crewai.com/)
-- 
