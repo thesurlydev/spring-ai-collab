@@ -45,7 +45,7 @@ public class AgentService {
     @Value("classpath:/prompts/choose-tool-args.st")
     private Resource chooseToolArgsUserPrompt;
 
-    @Value("classpath:/prompts/agent-choose-tool-args-no-format.st")
+    @Value("classpath:/prompts/choose-tool-args-no-format.st")
     private Resource chooseToolArgsUserPromptNoFormat;
 
     @Getter

@@ -5,7 +5,5 @@ public record CompanyDetail(String name,
                             String stockTicker,
                             String numberOfEmployees,
                             String summary,
-                            String location,
-                            String linkedinToken,
-                            String greenhouseToken
+                            String location
 ) {}

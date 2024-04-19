@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Type;
 
-@Agent(goal = "Interpret and answer questions about software")
+@Agent(goal = "Interpret and answer questions about software code")
 @Slf4j
 public class SoftwareEngineer extends AgentService {
     @Tool(name = "SchemaGenerator", description = "Given the fully qualified name of a class, generate a JSON schema for it")
