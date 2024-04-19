@@ -54,13 +54,12 @@ public class TaskPlanner {
         Map<String, AgentService> agents = agentRegistry.enabledAgents();
 
         log.info("Found {} enabled agents", agents.size());
+//        agents.forEach((k, v) -> log.info("Agent: {}, Goal: {}", k, v.getGoal()));
 
         if (task.getAgent() != null) {
             log.info("Task specified agent: {}", task.getAgent());
             return agents.keySet().stream().filter(s -> s.equals(task.getAgent())).findFirst();
         }
-
-        agents.forEach((k, v) -> log.info("Agent: {}, Goal: {}", k, v.getGoal()));
 
         if (agents.isEmpty()) {
             log.warn("No agents available");
