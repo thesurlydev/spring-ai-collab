@@ -1,0 +1,53 @@
+//file:noinspection GroovyUnusedAssignment
+plugins {
+    id 'java'
+    id 'org.springframework.boot'
+    id 'io.spring.dependency-management'
+}
+
+group = 'dev.surly.ai.collab'
+version = '0.0.1'
+
+java {
+    sourceCompatibility = '21'
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven { url 'https://repo.spring.io/milestone' }
+        maven { url 'https://repo.spring.io/snapshot' }
+    }
+}
+
+dependencies {
+    implementation platform("org.springframework.ai:spring-ai-bom:_")
+    developmentOnly Spring.boot.devTools
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:_'
+    implementation 'org.springframework.boot:spring-boot-starter-aop:_'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:_'
+    implementation Spring.boot.thymeleaf
+    implementation Spring.boot.actuator
+    implementation Spring.boot.web
+
+    implementation 'edu.stanford.nlp:stanford-corenlp:_'
+    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.6:models'
+
+    implementation 'org.apache.commons:commons-text:_'
+    implementation 'com.vladsch.flexmark:flexmark-all:_'
+    implementation 'com.vladsch.flexmark:flexmark-html2md-converter:_'
+
+    compileOnly 'org.projectlombok:lombok:_'
+    annotationProcessor 'org.projectlombok:lombok:_'
+
+    testImplementation Spring.boot.test
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:_'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+
+

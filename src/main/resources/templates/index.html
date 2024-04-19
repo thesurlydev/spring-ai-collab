@@ -1,0 +1,45 @@
+<html th:replace="~{layouts/default :: layout(~{::title}, ~{::section})}">
+<head>
+    <title>Spring AI Collab</title>
+</head>
+<body>
+<section>
+    <form action="#" th:action="@{/}" th:object="${teamForm}" method="post">
+
+        <div class="row mb-3">
+            <label for="task" class="col-sm-2 col-form-label">Task</label>
+            <div class="col-sm-6">
+                <input type="text" class="form-control" id="task" th:field="*{task}"/>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <label for="agent" class="col-sm-2 col-form-label">Agent (optional)</label>
+            <div class="col-sm-6">
+                <select class="form-select" id="agent" th:field="*{agent}">
+                    <option value="">No agent</option>
+                    <option th:each="a: ${agents}" th:value="${a.key}" th:text="${a.key}"></option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-6">
+                <button type="submit" class="btn btn-primary">Submit task</button>
+            </div>
+        </div>
+    </form>
+
+    <div th:if="${taskResult != null}">
+        <hr/>
+        <p>Agent: <span th:text="${taskResult.getAgent().getName()}">agent</span></p>
+        <p>Type: <code th:text="${taskResult.getDataType()}">type</code></p>
+        <code th:if="${taskResult.getDataType()} != 'java.lang.String'"
+              th:text="${taskResult.display()}" style="white-space: pre">display task result as pretty json</code>
+        <div th:if="${taskResult.getDataType()} == 'java.lang.String'"
+             th:utext="${taskResult.display()}">display task result as paragraph</div>
+    </div>
+</section>
+</body>
+</html>
