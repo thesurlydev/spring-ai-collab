@@ -12,6 +12,8 @@ An agent framework using [Spring AI](https://spring.io/projects/spring-ai).
 
 ## Roadmap
 
+Note: Some of the roadmap features depend on Chat message history which is not available in Spring AI yet.
+
 - Process multiple tasks at once.
 - Compose "teams" of agents that collaboratively work together to accomplish tasks.
 - Add JVM code creation and execution. (Java, Kotlin)
