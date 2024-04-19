@@ -1,8 +1,8 @@
 package dev.surly.ai.collab.controller;
 
 import dev.surly.ai.collab.Team;
+import dev.surly.ai.collab.agent.AgentMetadata;
 import dev.surly.ai.collab.agent.AgentRegistry;
-import dev.surly.ai.collab.agent.AgentService;
 import dev.surly.ai.collab.task.Task;
 import dev.surly.ai.collab.task.TaskResult;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +35,9 @@ public class TeamRestController {
     }
 
     @GetMapping("/agents")
-    public List<AgentService> agents() {
-        var agents = agentRegistry.allAgents();
-        return agents.values().stream().toList();
+    public List<AgentMetadata> agents() {
+        return agentRegistry.allAgents().values().stream()
+                .map(agent -> new AgentMetadata(agent.getName(), agent.getGoal(), agent.getBackground(), agent.getTools()))
+                .toList();
     }
 }
