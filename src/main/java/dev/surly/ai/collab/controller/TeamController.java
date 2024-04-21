@@ -30,7 +30,7 @@ public class TeamController {
     }
 
     @PostMapping("/")
-    public String processTask(@ModelAttribute TeamForm teamForm, Model model) {
+    public String executeTask(@ModelAttribute TeamForm teamForm, Model model) {
         log.info("Given task: {}", teamForm);
         Task task = teamForm.toTask();
         List<TaskResult> taskResults = team

@@ -31,7 +31,7 @@ public class Team {
 
     public List<TaskResult> kickoff() {
         return tasks.stream()
-                .map(agentTaskExecutor::processTask)
+                .map(agentTaskExecutor::executeTask)
                 .toList();
     }
 }

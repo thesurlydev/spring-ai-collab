@@ -104,11 +104,11 @@ public class AgentService {
         tools.put(toolMetadata.name(), toolMetadata);
     }
 
-    public TaskResult processTask(Task task) throws ToolInvocationException {
-        log.info("Processing task: {}", task);
+    public TaskResult executeTask(Task task) throws ToolInvocationException {
+        log.info("Executing task: {}", task);
         if (tools.isEmpty()) {
-            log.info("{} agent has no tools configured, processing task via LLM", this.name);
-            return processTaskViaLLM(task);
+            log.info("{} agent has no tools configured, executing task via LLM", this.name);
+            return executeTaskViaLLM(task);
         }
         ToolMetadata toolMetadata = chooseTool(task);
         Object args = getToolArgs(toolMetadata, task);
@@ -135,7 +135,7 @@ public class AgentService {
         }
     }
 
-    private TaskResult processTaskViaLLM(Task task) {
+    private TaskResult executeTaskViaLLM(Task task) {
 
         if (this.background != null && !this.background.isEmpty()) {
             addSystemMessage(this.background);

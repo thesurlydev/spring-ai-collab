@@ -19,26 +19,26 @@ public class AgentTaskExecutor {
     private final TaskPlanner taskPlanner;
     private final AgentRegistry agentRegistry;
 
-    public TaskResult processTask(Task task) throws ToolInvocationException {
-        log.info("Processing task: {}", task);
+    public TaskResult executeTask(Task task) throws ToolInvocationException {
+        log.info("Executing task: {}", task);
         return taskPlanner.chooseAgent(chatClient, task)
                 .map(agentRegistry::getAgent)
-                .map(agent -> agent.processTask(task))
+                .map(agent -> agent.executeTask(task))
                 .orElseThrow(() -> handleNoToolAvailable(task));
     }
 
-    public List<TaskResult> processTasks(ChatClient chatClient, List<Task> tasks) throws ToolInvocationException {
+    public List<TaskResult> executeTasks(ChatClient chatClient, List<Task> tasks) throws ToolInvocationException {
         return tasks.stream()
                 .map(task -> taskPlanner.chooseAgent(chatClient, task)
                         .map(agentRegistry::getAgent)
-                        .map(agent -> agent.processTask(task))
+                        .map(agent -> agent.executeTask(task))
                         .orElseThrow(() -> handleNoToolAvailable(task))
                 )
                 .toList();
     }
 
     private @NotNull ToolInvocationException handleNoToolAvailable(Task task) {
-        log.error("No tool available to process task: {}", task);
-        return new ToolInvocationException("No tool available to process task");
+        log.error("No tool available to execute task: {}", task);
+        return new ToolInvocationException("No tool available to execute task");
     }
 }
