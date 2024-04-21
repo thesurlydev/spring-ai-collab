@@ -114,7 +114,7 @@ public class AgentService {
         Object args = getToolArgs(toolMetadata, task);
         try {
             Object toolResult = invokeTool(toolMetadata.method(), args);
-            TaskResult tr = new TaskResult(this, toolResult);
+            TaskResult tr = new TaskResult(this.name, toolResult);
             log.info("TaskResult: {}", tr);
             return tr;
         } catch (Exception e) {
@@ -154,7 +154,7 @@ public class AgentService {
         Prompt prompt = new Prompt(messages);
         String data = callPromptForString(prompt);
 
-        return new TaskResult(this, data);
+        return new TaskResult(this.name, data);
     }
 
     private ToolMetadata chooseTool(Task task) {

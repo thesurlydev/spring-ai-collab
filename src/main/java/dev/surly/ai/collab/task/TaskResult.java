@@ -11,17 +11,14 @@ import lombok.Getter;
 @Getter
 @Data
 public class TaskResult {
-    private final AgentService agent;
+    private final String agentName;
     private final Object data;
     private final String dataType;
-    private final ObjectMapper mapper;
 
-    public TaskResult(AgentService agent, Object data) {
-        this.agent = agent;
+    public TaskResult(String agentName, Object data) {
+        this.agentName = agentName;
         this.data = data;
         this.dataType = data.getClass().getName();
-        this.mapper = new ObjectMapper();
-        this.mapper.enable(SerializationFeature.INDENT_OUTPUT); // Enable pretty print
     }
 
     public String display() {
@@ -31,6 +28,8 @@ public class TaskResult {
         } else {
             String prettyJson;
             try {
+                ObjectMapper mapper = new ObjectMapper()
+                        .enable(SerializationFeature.INDENT_OUTPUT); // Enable pretty print
                 prettyJson = mapper.writeValueAsString(data);
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
