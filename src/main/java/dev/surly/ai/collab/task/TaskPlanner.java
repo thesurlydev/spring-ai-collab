@@ -72,8 +72,6 @@ public class TaskPlanner {
             return Optional.ofNullable(agent.getKey());
         }
 
-        var outputParser = new BeanOutputParser<>(String.class);
-
         StringBuilder agentList = new StringBuilder();
         for (Map.Entry<String, AgentService> entry : agents.entrySet()) {
             agentList.append(entry.getKey()).append(": ").append(entry.getValue().getGoal()).append("\r\n");
@@ -81,8 +79,7 @@ public class TaskPlanner {
 
         PromptTemplate promptTemplate = new PromptTemplate(chooseAgentUserPrompt, Map.of(
                 "task", task.getDescription(),
-                "agents", agentList.toString(),
-                "format", outputParser.getFormat()
+                "agents", agentList.toString()
         ));
         Prompt prompt = promptTemplate.create();
 
@@ -91,7 +88,7 @@ public class TaskPlanner {
         Long elapsed = System.currentTimeMillis() - start;
         log.info("Selected Agent: {} in {} ms", out, elapsed);
 
-        return Optional.ofNullable(outputParser.parse(out));
+        return Optional.ofNullable(out);
     }
 
     private Map<String, Object> chooseAgents(ChatClient chatClient, List<Task> tasks) {
