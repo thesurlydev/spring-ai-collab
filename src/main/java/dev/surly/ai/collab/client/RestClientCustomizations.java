@@ -1,5 +1,6 @@
 package dev.surly.ai.collab.client;
 
+import dev.surly.ai.collab.log.LoggingInterceptor;
 import org.springframework.boot.web.client.ClientHttpRequestFactories;
 import org.springframework.boot.web.client.ClientHttpRequestFactorySettings;
 import org.springframework.boot.web.client.RestClientCustomizer;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 
 @Component
-public class RestClientCustomTimeouts {
+public class RestClientCustomizations {
 
     /**
      * Customizes the timeouts for RestClient.
@@ -24,6 +25,7 @@ public class RestClientCustomTimeouts {
                         ClientHttpRequestFactorySettings.DEFAULTS
                                 .withConnectTimeout(Duration.ofSeconds(5))
                                 .withReadTimeout(Duration.ofSeconds(60))
-                ));
+                ))
+                .requestInterceptor(new LoggingInterceptor());
     }
 }
