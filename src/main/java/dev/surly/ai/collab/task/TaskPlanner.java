@@ -11,7 +11,6 @@ import org.springframework.ai.chat.ChatClient;
 import org.springframework.ai.chat.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.parser.BeanOutputParser;
 import org.springframework.ai.parser.MapOutputParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -35,7 +34,6 @@ public class TaskPlanner {
     @Value("classpath:/prompts/task-planner-choose-agent.st")
     private Resource chooseAgentUserPrompt;
 
-    @Tool(name = "TaskAssigner")
     public List<TaskAssignment> assign(List<Task> tasks) {
         return tasks.stream()
                 .map(task -> new TaskAssignment(task, chooseAgent(chatClient, task).orElse(null)))

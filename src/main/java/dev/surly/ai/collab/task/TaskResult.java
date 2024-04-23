@@ -3,7 +3,6 @@ package dev.surly.ai.collab.task;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import dev.surly.ai.collab.agent.AgentService;
 import dev.surly.ai.collab.util.ConversionUtils;
 import lombok.Data;
 import lombok.Getter;
@@ -11,14 +10,32 @@ import lombok.Getter;
 @Getter
 @Data
 public class TaskResult {
+    private final Task task;
     private final String agentName;
+    private final String toolName;
     private final Object data;
     private final String dataType;
+    private TaskError taskError;
 
-    public TaskResult(String agentName, Object data) {
+    public TaskResult(Task task, String agentName, String toolName, Object data) {
+        this.task = task;
         this.agentName = agentName;
+        this.toolName = toolName;
         this.data = data;
-        this.dataType = data.getClass().getName();
+        if (data != null) {
+            this.dataType = data.getClass().getName();
+        } else {
+            this.dataType = null;
+        }
+    }
+
+    public TaskResult(Task task, String agentName, String toolName, TaskError taskError) {
+        this.task = task;
+        this.agentName = agentName;
+        this.toolName = toolName;
+        this.data = null;
+        this.dataType = null;
+        this.taskError = taskError;
     }
 
     public String display() {

@@ -26,10 +26,7 @@ import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RequiredArgsConstructor
 @ToString
@@ -40,7 +37,7 @@ public class AgentService {
     protected ChatClient chatClient;
 
     @Value("classpath:/prompts/choose-tool.st")
-    private Resource chooseAgentUserPrompt;
+    private Resource chooseToolUserPrompt;
 
     @Value("classpath:/prompts/choose-tool-args.st")
     private Resource chooseToolArgsUserPrompt;
@@ -111,10 +108,13 @@ public class AgentService {
             return executeTaskViaLLM(task);
         }
         ToolMetadata toolMetadata = chooseTool(task);
+        if (toolMetadata.name().equals("__NO_TOOL__")) {
+            return executeTaskViaLLM(task);
+        }
         Object args = getToolArgs(toolMetadata, task);
         try {
             Object toolResult = invokeTool(toolMetadata.method(), args);
-            TaskResult tr = new TaskResult(this.name, toolResult);
+            TaskResult tr = new TaskResult(task, this.name, toolMetadata.name(), toolResult);
             log.info("TaskResult: {}", tr);
             return tr;
         } catch (Exception e) {
@@ -135,18 +135,27 @@ public class AgentService {
         }
     }
 
-    private TaskResult executeTaskViaLLM(Task task) {
-
-        if (this.background != null && !this.background.isEmpty()) {
-            addSystemMessage(this.background);
-        }
-
+    public void addDateContext() {
         StringBuilder dateContext = new StringBuilder();
         dateContext
                 .append("The date and time right now is: ")
                 .append(ZonedDateTime.now().format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL)))
                 .append(". Use this date to answer any questions related to the current date and time.");
         addSystemMessage(dateContext.toString());
+    }
+
+    public void addMathInstructions() {
+        addSystemMessage("If you perform any math calculations, please return the resulting number and nothing else. Do not return a sentence or any other text.");
+    }
+
+    protected TaskResult executeTaskViaLLM(Task task) {
+
+        if (this.background != null && !this.background.isEmpty()) {
+            addSystemMessage(this.background);
+        }
+
+        addDateContext();
+        addMathInstructions();
 
         var taskDescription = task.getDescription();
         addUserMessage(taskDescription);
@@ -154,7 +163,7 @@ public class AgentService {
         Prompt prompt = new Prompt(messages);
         String data = callPromptForString(prompt);
 
-        return new TaskResult(this.name, data);
+        return new TaskResult(task, this.name, null, data);
     }
 
     private ToolMetadata chooseTool(Task task) {
@@ -162,11 +171,15 @@ public class AgentService {
         tools.values().stream()
                 .map(toolMetadata -> toolMetadata.name() + ": " + toolMetadata.description() + "\r\n")
                 .forEach(toolList::append);
-        Prompt prompt = createPrompt(chooseAgentUserPrompt, Map.of(
+        Prompt prompt = createPrompt(chooseToolUserPrompt, Map.of(
                 "task", task.getDescription(),
                 "tools", toolList.toString()
         ));
         String toolName = callPromptForString(prompt);
+        if (toolName.equals("__NO_TOOL__")) {
+            log.warn("No suitable tool found for task: {}", task.getDescription());
+            return new ToolMetadata("__NO_TOOL__", null, null, false);
+        }
         ToolMetadata tool = tools.get(toolName);
         log.info("Chosen tool: {}", tool);
         if (tool == null) {
