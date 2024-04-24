@@ -2,6 +2,7 @@ package dev.surly.ai.collab.flow;
 
 import dev.surly.ai.collab.task.AgentTaskExecutor;
 import dev.surly.ai.collab.task.Task;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +13,7 @@ public class FlowExecutionTest {
 
 
     @Test
+    @Disabled("Requires OpenAI API key")
     public void test() {
 
         Flow flow = new ParallelFlow(agentTaskExecutor);
@@ -20,7 +22,7 @@ public class FlowExecutionTest {
         flow.addTask(sayHiTask);
 
         Task task = new Task("""
-                Identify programming language is this?:
+                Identify programming language of the following code snippet:
                 ```
                 @Tool(name ="TestWriter", description = "Write comprehensive test cases for a given software class, method, or function")
                     public String writeTests(String code) {
@@ -33,7 +35,7 @@ public class FlowExecutionTest {
         Task whoWroteTask = new Task("Who wrote the book Without Remorse?");
         flow.addTask(whoWroteTask);
 
-        Task whoIsTask = new Task("Who is barack obama?");
+        Task whoIsTask = new Task("Who is Barack Obama?");
         flow.addTask(whoIsTask);
 
         Task whoIsTask2 = new Task("What is 2 plus 2?");
