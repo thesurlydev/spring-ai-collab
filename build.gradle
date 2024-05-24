@@ -1,8 +1,7 @@
-//file:noinspection GroovyUnusedAssignment
 plugins {
-    id 'java'
-    id 'org.springframework.boot'
-    id 'io.spring.dependency-management'
+    id "java"
+    id "org.springframework.boot" version "3.3.0"
+    id "io.spring.dependency-management" version "1.1.5"
 }
 
 group = 'dev.surly.ai.collab'
@@ -14,6 +13,7 @@ java {
 
 allprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven { url 'https://jitpack.io' }
         maven { url 'https://repo.spring.io/milestone' }
@@ -21,28 +21,47 @@ allprojects {
     }
 }
 
+configurations.configureEach {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:3.3.0"
+    }
+}
+
 dependencies {
-    implementation platform("org.springframework.ai:spring-ai-bom:_")
-    developmentOnly Spring.boot.devTools
-    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter:_'
-    implementation 'org.springframework.boot:spring-boot-starter-aop:_'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:_'
-    implementation Spring.boot.thymeleaf
-    implementation Spring.boot.actuator
-    implementation Spring.boot.web
 
-    implementation 'edu.stanford.nlp:stanford-corenlp:_'
-    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.6:models'
+    implementation platform("org.springframework.ai:spring-ai-bom:1.0.0-SNAPSHOT")
+    implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
 
-    implementation 'org.apache.commons:commons-text:_'
-    implementation 'com.vladsch.flexmark:flexmark-all:_'
-    implementation 'com.vladsch.flexmark:flexmark-html2md-converter:_'
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
-    compileOnly 'org.projectlombok:lombok:_'
-    annotationProcessor 'org.projectlombok:lombok:_'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
 
-    testImplementation Spring.boot.test
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:_'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+
+    implementation 'org.springframework.statemachine:spring-statemachine-core:4.0.0'
+    implementation 'io.cloudevents:cloudevents-core:3.0.0'
+
+    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.7'
+    implementation 'edu.stanford.nlp:stanford-corenlp:4.5.7:models'
+
+    implementation 'org.apache.commons:commons-text:1.11.0'
+    implementation 'com.vladsch.flexmark:flexmark-all:0.64.8'
+    implementation 'com.vladsch.flexmark:flexmark-html2md-converter:0.64.8'
+
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    testImplementation 'org.springframework.boot:spring-boot-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
 }
 
 test {
