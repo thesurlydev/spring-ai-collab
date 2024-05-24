@@ -4,15 +4,22 @@ import dev.surly.ai.collab.agent.Agent;
 import dev.surly.ai.collab.agent.AgentService;
 import dev.surly.ai.collab.agent.example.model.MathRequest;
 import dev.surly.ai.collab.tool.Tool;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Agent(goal = "Answer mathematical questions and solve problems")
+@RestController
+@RequestMapping("/api/agents/mathematician")
 public class Mathematician extends AgentService {
 
     @Tool(name = "Adder", description = "Add a list of numbers together")
-    public double add(MathRequest request) {
+    @PostMapping("/add")
+    public double add(@RequestBody MathRequest request) {
         double sum = 0;
         for (double num : request.numbers()) {
             sum += num;

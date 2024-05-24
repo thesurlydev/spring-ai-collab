@@ -2,16 +2,14 @@ package dev.surly.ai.collab.task;
 
 import dev.surly.ai.collab.agent.AgentRegistry;
 import dev.surly.ai.collab.agent.AgentService;
-import dev.surly.ai.collab.tool.Tool;
 import dev.surly.ai.collab.tool.ToolMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.Generation;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.parser.MapOutputParser;
+import org.springframework.ai.converter.MapOutputConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
@@ -25,7 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class TaskPlanner {
 
-    private final ChatClient chatClient;
+    private final ChatModel chatModel;
     private final AgentRegistry agentRegistry;
 
     @Value("classpath:/prompts/task-planner-choose-agents.st")
@@ -36,7 +34,7 @@ public class TaskPlanner {
 
     public List<TaskAssignment> assign(List<Task> tasks) {
         return tasks.stream()
-                .map(task -> new TaskAssignment(task, chooseAgent(chatClient, task).orElse(null)))
+                .map(task -> new TaskAssignment(task, chooseAgent(chatModel, task).orElse(null)))
                 .toList();
     }
 
@@ -47,7 +45,7 @@ public class TaskPlanner {
      * @param task
      * @return
      */
-    public Optional<String> chooseAgent(ChatClient chatClient, Task task) {
+    public Optional<String> chooseAgent(ChatModel chatModel, Task task) {
         long start = System.currentTimeMillis();
         Map<String, AgentService> agents = agentRegistry.enabledAgents();
 
@@ -81,15 +79,15 @@ public class TaskPlanner {
         ));
         Prompt prompt = promptTemplate.create();
 
-        Generation generation = chatClient.call(prompt).getResult();
-        String out = generation.getOutput().getContent();
+        var generation = chatModel.call(prompt).getResult();
+        String content = generation.getOutput().getContent();
         Long elapsed = System.currentTimeMillis() - start;
-        log.info("Selected Agent: {} in {} ms", out, elapsed);
+        log.info("Selected Agent: {} in {} ms", content, elapsed);
 
-        return Optional.ofNullable(out);
+        return Optional.ofNullable(content);
     }
 
-    private Map<String, Object> chooseAgents(ChatClient chatClient, List<Task> tasks) {
+    private Map<String, Object> chooseAgents(ChatModel chatModel, List<Task> tasks) {
         Map<String, AgentService> agents = agentRegistry.enabledAgents();
 
         if (agents.isEmpty()) {
@@ -100,7 +98,7 @@ public class TaskPlanner {
         log.info("Found {} enabled agents", agents.size());
         agents.forEach((k, v) -> log.info("Agent: {}, Goal: {}", k, v.getGoal()));
 
-        var outputParser = new MapOutputParser();
+        var outputConverter = new MapOutputConverter();
 
         StringBuilder agentList = new StringBuilder();
         for (Map.Entry<String, AgentService> entry : agents.entrySet()) {
@@ -122,14 +120,14 @@ public class TaskPlanner {
         PromptTemplate promptTemplate = new PromptTemplate(chooseAgentsUserPrompt, Map.of(
                 "tasks", taskList.toString(),
                 "agents", agentList.toString(),
-                "format", outputParser.getFormat()
+                "format", outputConverter.getFormat()
         ));
         Prompt prompt = promptTemplate.create();
 
-        Generation generation = chatClient.call(prompt).getResult();
-        String out = generation.getOutput().getContent();
+        var generation = chatModel.call(prompt).getResult();
+        String content = generation.getOutput().getContent();
 
-        return outputParser.parse(out);
+        return outputConverter.convert(content);
     }
 
     private @NotNull StringBuilder generateToolListForPrompt(Map<String, ToolMetadata> tools) {

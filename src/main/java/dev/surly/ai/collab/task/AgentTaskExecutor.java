@@ -5,7 +5,7 @@ import dev.surly.ai.collab.exception.ToolInvocationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,21 +15,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AgentTaskExecutor {
 
-    private final ChatClient chatClient;
+    private final ChatModel chatModel;
     private final TaskPlanner taskPlanner;
     private final AgentRegistry agentRegistry;
 
     public TaskResult executeTask(Task task) throws ToolInvocationException {
         log.info("Executing task: {}", task);
-        return taskPlanner.chooseAgent(chatClient, task)
+        return taskPlanner.chooseAgent(chatModel, task)
                 .map(agentRegistry::getAgent)
                 .map(agent -> agent.executeTask(task))
                 .orElseThrow(() -> handleNoToolAvailable(task));
     }
 
-    public List<TaskResult> executeTasks(ChatClient chatClient, List<Task> tasks) throws ToolInvocationException {
+    public List<TaskResult> executeTasks(ChatModel chatModel, List<Task> tasks) throws ToolInvocationException {
         return tasks.stream()
-                .map(task -> taskPlanner.chooseAgent(chatClient, task)
+                .map(task -> taskPlanner.chooseAgent(chatModel, task)
                         .map(agentRegistry::getAgent)
                         .map(agent -> agent.executeTask(task))
                         .orElseThrow(() -> handleNoToolAvailable(task))

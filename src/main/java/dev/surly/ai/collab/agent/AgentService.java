@@ -6,18 +6,17 @@ import dev.surly.ai.collab.task.Task;
 import dev.surly.ai.collab.task.TaskResult;
 import dev.surly.ai.collab.tool.ToolMetadata;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.Generation;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-import org.springframework.ai.parser.BeanOutputParser;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -26,7 +25,10 @@ import java.lang.reflect.Method;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @ToString
@@ -34,7 +36,7 @@ import java.util.*;
 public class AgentService {
 
     @Autowired
-    protected ChatClient chatClient;
+    protected ChatModel chatModel;
 
     @Value("classpath:/prompts/choose-tool.st")
     private Resource chooseToolUserPrompt;
@@ -65,14 +67,14 @@ public class AgentService {
     }
 
     public String callPromptForString(Prompt prompt) {
-        Generation generation = chatClient.call(prompt).getResult();
+        Generation generation = chatModel.call(prompt).getResult();
         return generation.getOutput().getContent();
     }
 
-    public Object callPromptForBean(Prompt prompt, BeanOutputParser beanOutputParser) {
-        Generation generation = chatClient.call(prompt).getResult();
+    public Object callPromptForBean(Prompt prompt, BeanOutputConverter beanOutputConverter) {
+        Generation generation = chatModel.call(prompt).getResult();
         String out = generation.getOutput().getContent();
-        return beanOutputParser.parse(out);
+        return beanOutputConverter.convert(out);
     }
 
     public void addSystemMessage(String message) {
@@ -111,7 +113,18 @@ public class AgentService {
         if (toolMetadata.name().equals("__NO_TOOL__")) {
             return executeTaskViaLLM(task);
         }
-        Object args = getToolArgs(toolMetadata, task);
+
+        Object args = null;
+
+        Class<?> returnType = toolMetadata.getReturnType();
+        if (returnType != null) {
+            if (returnType.isPrimitive() || "java.lang.String".equals(returnType.getName())) {
+                args = getArgsAsString(task, toolMetadata);
+            } else {
+                args = getArgsAsObject(task, returnType, toolMetadata);
+            }
+        }
+
         try {
             Object toolResult = invokeTool(toolMetadata.method(), args);
             TaskResult tr = new TaskResult(task, this.name, toolMetadata.name(), toolResult);
@@ -121,6 +134,25 @@ public class AgentService {
             throw new ToolInvocationException("Error invoking tool: " + toolMetadata + " for task: " + task, e);
         }
     }
+
+    private Object getArgsAsString(Task task, ToolMetadata toolMetadata) {
+        Prompt prompt = createPrompt(chooseToolArgsUserPromptNoFormat, Map.of(
+                "task", task.getDescription(),
+                "signature", toolMetadata.getMethodArgsAsString()
+        ));
+        return callPromptForString(prompt);
+    }
+
+    private Object getArgsAsObject(Task task, Class<?> returnType, ToolMetadata toolMetadata) {
+        BeanOutputConverter outputConverter = new BeanOutputConverter(returnType);
+        Prompt prompt = createPrompt(chooseToolArgsUserPrompt, Map.of(
+                "task", task.getDescription(),
+                "signature", toolMetadata.getMethodArgsAsString(),
+                "format", outputConverter.getFormat()
+        ));
+        return callPromptForBean(prompt, outputConverter);
+    }
+
 
     private <T> T invokeTool(Method method, Object args) throws Exception {
         if (args == null) {
@@ -186,28 +218,5 @@ public class AgentService {
             throw new ToolNotFoundException("No tool found with name: " + toolName);
         }
         return tool;
-    }
-
-    private Object getToolArgs(@NonNull ToolMetadata toolMetadata, @NonNull Task task) {
-        Class<?> returnType = toolMetadata.getReturnType();
-        if (returnType == null) {
-            return null;
-        }
-
-        if (returnType.isPrimitive() || "java.lang.String".equals(returnType.getName())) {
-            Prompt prompt = createPrompt(chooseToolArgsUserPromptNoFormat, Map.of(
-                    "task", task.getDescription(),
-                    "signature", toolMetadata.getMethodArgsAsString()
-            ));
-            return callPromptForString(prompt);
-        } else {
-            var outputParser = new BeanOutputParser<>(returnType);
-            Prompt prompt = createPrompt(chooseToolArgsUserPrompt, Map.of(
-                    "task", task.getDescription(),
-                    "signature", toolMetadata.getMethodArgsAsString(),
-                    "format", outputParser.getFormat()
-            ));
-            return callPromptForBean(prompt, outputParser);
-        }
     }
 }

@@ -6,10 +6,10 @@ import dev.surly.ai.collab.agent.example.model.CompanyDetail;
 import dev.surly.ai.collab.tool.Tool;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.Generation;
+import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
-import org.springframework.ai.parser.BeanOutputParser;
+import org.springframework.ai.converter.BeanOutputConverter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 
@@ -35,7 +35,7 @@ public class BusinessAnalyst extends AgentService {
 
     @Tool(name = "GetCompanyDetail", description = "Given a company name, get the details about the company including website URL")
     public CompanyDetail getCompanyDetails(String name) {
-        var outputParser = new BeanOutputParser<>(CompanyDetail.class);
+        var outputConverter = new BeanOutputConverter<>(CompanyDetail.class);
 
         String userMessage =
                 """
@@ -45,14 +45,14 @@ public class BusinessAnalyst extends AgentService {
                 """;
 
         PromptTemplate promptTemplate = new PromptTemplate(userMessage, Map.of("name", name, "format",
-                outputParser.getFormat()));
+                outputConverter.getFormat()));
         Prompt prompt = promptTemplate.create();
 
         log.info("Prompt: {}", prompt.toString());
 
-        Generation generation = chatClient.call(prompt).getResult();
+        Generation generation = chatModel.call(prompt).getResult();
 
-        CompanyDetail detail = outputParser.parse(generation.getOutput().getContent());
+        CompanyDetail detail = outputConverter.convert(generation.getOutput().getContent());
         log.info("CompanyDetail: {}", detail);
         return detail;
     }
