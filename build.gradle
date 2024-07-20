@@ -43,6 +43,10 @@ dependencies {
 
     implementation 'org.springframework.ai:spring-ai-openai-spring-boot-starter'
 
+    implementation 'org.springframework.ai:spring-ai-pdf-document-reader'
+    // use the latest version of pdfbox for bug fixes
+    implementation 'org.apache.pdfbox:pdfbox:3.0.2'
+
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
     implementation 'org.springframework.boot:spring-boot-starter-aop'
