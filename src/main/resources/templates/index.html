@@ -39,6 +39,8 @@
               th:text="${taskResult.display()}" style="white-space: pre">display task result as pretty json</code>
         <div th:if="${taskResult.getDataType()} == 'java.lang.String'"
              th:utext="${taskResult.display()}">display task result as paragraph</div>
+        <img th:if="${taskResult.getDataType()} == 'org.springframework.ai.image.Image'"
+             th:src="${taskResult.display().getUrl()}" width="1024" height="1024" alt="generate image"/>
     </div>
 </section>
 </body>

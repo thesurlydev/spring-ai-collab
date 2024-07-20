@@ -39,6 +39,9 @@ public class LoggingInterceptor implements ClientHttpRequestInterceptor {
         }
 
         ClientHttpResponse response = execution.execute(request, body);
+        if (response.getStatusCode() == HttpStatusCode.valueOf(400)) {
+            log.error("400: {}", response.getStatusText());
+        }
 
         byte[] responseBody = logResponseBody(response);
 

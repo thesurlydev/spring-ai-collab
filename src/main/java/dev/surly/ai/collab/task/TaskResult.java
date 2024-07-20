@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import dev.surly.ai.collab.util.ConversionUtils;
 import lombok.Data;
 import lombok.Getter;
+import org.springframework.ai.image.Image;
 
 @Getter
 @Data
@@ -38,8 +39,10 @@ public class TaskResult {
         this.taskError = taskError;
     }
 
-    public String display() {
-        if (data instanceof String raw) {
+    public Object display() {
+        if (data instanceof Image) {
+            return data;
+        } else if (data instanceof String raw) {
             var markdown = ConversionUtils.convertToMarkdown(raw);
             return ConversionUtils.convertToHtml(markdown);
         } else {

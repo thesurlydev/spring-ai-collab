@@ -17,6 +17,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.converter.BeanOutputConverter;
+import org.springframework.ai.openai.OpenAiImageModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -34,6 +35,9 @@ import java.util.Map;
 @ToString
 @Slf4j
 public class AgentService {
+
+    @Autowired
+    protected OpenAiImageModel openAiImageModel;
 
     @Autowired
     protected ChatModel chatModel;
