@@ -10,6 +10,7 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/agents/healthcare-advocate")
 @Slf4j
 @Component
+@Profile("healthcare")
 public class HealthcarePatientAdvocate extends AgentService {
 
     private final VectorStore vectorStore;

@@ -30,8 +30,7 @@ public class SequentialFlow implements Flow {
                     try {
                         return agentTaskExecutor.executeTask(task);
                     } catch (Exception e) {
-                        log.error("Error executing task", e);
-                        return new TaskResult(task, "unknown", "unknown", e);
+                        return logAndReturnTaskError(log, task, e);
                     }
                 }).toList();
     }

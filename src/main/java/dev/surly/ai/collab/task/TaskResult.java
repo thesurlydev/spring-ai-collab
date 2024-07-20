@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.Getter;
 import org.springframework.ai.image.Image;
 
+import java.util.List;
+
 @Getter
 @Data
 public class TaskResult {
@@ -17,8 +19,9 @@ public class TaskResult {
     private final Object data;
     private final String dataType;
     private TaskError taskError;
+    private List<TaskTiming> timings;
 
-    public TaskResult(Task task, String agentName, String toolName, Object data) {
+    public TaskResult(Task task, String agentName, String toolName, Object data, List<TaskTiming> timings) {
         this.task = task;
         this.agentName = agentName;
         this.toolName = toolName;
@@ -28,6 +31,7 @@ public class TaskResult {
         } else {
             this.dataType = null;
         }
+        this.timings = timings;
     }
 
     public TaskResult(Task task, String agentName, String toolName, TaskError taskError) {
@@ -37,6 +41,15 @@ public class TaskResult {
         this.data = null;
         this.dataType = null;
         this.taskError = taskError;
+    }
+
+    public Long getDuration() {
+        if (timings == null || timings.isEmpty()) {
+            return 0L;
+        }
+        return timings.stream()
+                .map(TaskTiming::timeMs)
+                .reduce(0L, Long::sum);
     }
 
     public Object display() {

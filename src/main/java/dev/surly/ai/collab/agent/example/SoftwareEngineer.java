@@ -52,8 +52,7 @@ public class SoftwareEngineer extends AgentService {
         try {
             jsonSchema = objectWriter.writeValueAsString(jsonNode);
         } catch (JsonProcessingException var8) {
-            JsonProcessingException e = var8;
-            throw new RuntimeException("Could not pretty print json schema for " + clazz, e);
+            throw new RuntimeException("Could not pretty print json schema for " + clazz, var8);
         }
         return String.format("\n```%s```\n", jsonSchema);
     }

@@ -4,6 +4,7 @@ import dev.surly.ai.collab.exception.ToolInvocationException;
 import dev.surly.ai.collab.exception.ToolNotFoundException;
 import dev.surly.ai.collab.task.Task;
 import dev.surly.ai.collab.task.TaskResult;
+import dev.surly.ai.collab.task.TaskTiming;
 import dev.surly.ai.collab.tool.ToolMetadata;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -109,17 +110,22 @@ public class AgentService {
 
     public TaskResult executeTask(Task task) throws ToolInvocationException {
         log.info("Executing task: {}", task);
+        List<TaskTiming> timings = new ArrayList<>();
+
         if (tools.isEmpty()) {
             log.info("{} agent has no tools configured, executing task via LLM", this.name);
-            return executeTaskViaLLM(task);
+            return executeTaskViaLLM(task, timings);
         }
+
+        var startChooseTool = System.currentTimeMillis();
         ToolMetadata toolMetadata = chooseTool(task);
+        timings.add(new TaskTiming("chooseTool", System.currentTimeMillis() - startChooseTool));
         if (toolMetadata.name().equals("__NO_TOOL__")) {
-            return executeTaskViaLLM(task);
+            return executeTaskViaLLM(task, timings);
         }
 
+        var startGetArgs = System.currentTimeMillis();
         Object args = null;
-
         Class<?> returnType = toolMetadata.getReturnType();
         if (returnType != null) {
             if (returnType.isPrimitive() || "java.lang.String".equals(returnType.getName())) {
@@ -128,10 +134,13 @@ public class AgentService {
                 args = getArgsAsObject(task, returnType, toolMetadata);
             }
         }
+        timings.add(new TaskTiming("getArgs", System.currentTimeMillis() - startGetArgs));
 
         try {
+            var startInvokeTool = System.currentTimeMillis();
             Object toolResult = invokeTool(toolMetadata.method(), args);
-            TaskResult tr = new TaskResult(task, this.name, toolMetadata.name(), toolResult);
+            timings.add(new TaskTiming("invokeTool", System.currentTimeMillis() - startInvokeTool));
+            TaskResult tr = new TaskResult(task, this.name, toolMetadata.name(), toolResult, timings);
             log.info("TaskResult: {}", tr);
             return tr;
         } catch (Exception e) {
@@ -184,8 +193,9 @@ public class AgentService {
         addSystemMessage("If you perform any math calculations, please return the resulting number and nothing else. Do not return a sentence or any other text.");
     }
 
-    protected TaskResult executeTaskViaLLM(Task task) {
+    protected TaskResult executeTaskViaLLM(Task task, List<TaskTiming> timings) {
 
+        var startLLM = System.currentTimeMillis();
         if (this.background != null && !this.background.isEmpty()) {
             addSystemMessage(this.background);
         }
@@ -199,7 +209,9 @@ public class AgentService {
         Prompt prompt = new Prompt(messages);
         String data = callPromptForString(prompt);
 
-        return new TaskResult(task, this.name, null, data);
+        timings.add(new TaskTiming("executeViaLLM", System.currentTimeMillis() - startLLM));
+
+        return new TaskResult(task, this.name, null, data, timings);
     }
 
     private ToolMetadata chooseTool(Task task) {

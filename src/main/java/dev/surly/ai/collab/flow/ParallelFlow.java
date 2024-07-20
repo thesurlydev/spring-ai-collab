@@ -2,7 +2,6 @@ package dev.surly.ai.collab.flow;
 
 import dev.surly.ai.collab.task.AgentTaskExecutor;
 import dev.surly.ai.collab.task.Task;
-import dev.surly.ai.collab.task.TaskError;
 import dev.surly.ai.collab.task.TaskResult;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,13 +32,13 @@ public class ParallelFlow implements Flow {
         }
         List<TaskResult> results = new ArrayList<>();
         for (Task task : tasks) {
+            TaskResult taskResult;
             try {
-                TaskResult result = completionService.take().get();
-                results.add(result);
+                taskResult = completionService.take().get();
             } catch (InterruptedException | ExecutionException e) {
-                log.error("Error executing task", e);
-                results.add(new TaskResult(task, "unknown", "unknown", new TaskError("Error executing task", e)));
+                taskResult = logAndReturnTaskError(log, task, e);
             }
+            results.add(taskResult);
         }
         return results;
     }
