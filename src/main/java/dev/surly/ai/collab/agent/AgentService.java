@@ -6,6 +6,7 @@ import dev.surly.ai.collab.task.Task;
 import dev.surly.ai.collab.task.TaskResult;
 import dev.surly.ai.collab.task.TaskTiming;
 import dev.surly.ai.collab.tool.ToolMetadata;
+import dev.surly.ai.collab.workflow.WorkflowState;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
@@ -64,6 +65,15 @@ public class AgentService {
     private final Map<String, ToolMetadata> tools = new HashMap<>();
     @Getter
     List<Message> messages = new ArrayList<>();
+
+    public boolean canPerform(WorkflowState workflowState) {
+        // TODO implement this method
+        return true;
+    }
+
+    public void performTask(String task, Map<String, Object> context) {
+        // TODO implement this method
+    }
 
     public Prompt createPrompt(Resource promptTemplateResource,
                                Map<String, Object> promptModel) {
