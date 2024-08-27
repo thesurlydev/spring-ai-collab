@@ -27,3 +27,4 @@ out/
 !**/src/test/**/out/
 
 .env
+target/
