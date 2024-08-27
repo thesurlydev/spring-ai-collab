@@ -16,7 +16,7 @@
         <springAiVersion>1.0.0-M1</springAiVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-statemachine-core.version>4.0.0</spring-statemachine-core.version>
-        <springdoc-openapi-starter-webmvc-ui.vrsion>2.6.0</springdoc-openapi-starter-webmvc-ui.vrsion>
+        <springdoc-openapi-starter-webmvc-ui.version>2.6.0</springdoc-openapi-starter-webmvc-ui.version>
         <edu.stanford.nlp.version>4.5.7</edu.stanford.nlp.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <flexmark-html2md-converter.version>0.64.8</flexmark-html2md-converter.version>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <version>${springdoc-openapi-starter-webmvc-ui.vrsion}</version>
+            <version>${springdoc-openapi-starter-webmvc-ui.version}</version>
         </dependency>
 
         <!-- State Machine and CloudEvents -->
