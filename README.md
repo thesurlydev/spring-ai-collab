@@ -2,6 +2,8 @@
 
 An agent framework using [Spring AI](https://spring.io/projects/spring-ai).
 
+**NOTE**: This is a proof of concept and work is underway to refactor the project into a library which can be used in other Spring projects.
+
 ## Features
 
 - Support for multiple agents and tools via simple annotations.
